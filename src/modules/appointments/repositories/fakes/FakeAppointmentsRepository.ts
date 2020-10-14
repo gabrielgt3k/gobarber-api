@@ -1,13 +1,27 @@
 import { uuid } from 'uuidv4';
-import { isEqual, getMonth, getYear } from 'date-fns';
+import { isEqual, getMonth, getYear, getDate } from 'date-fns';
 import IAppointmentsRepository from '@modules/appointments/repositories/IAppointmentsRepository';
 import ICreateAppointmentDTO from '@modules/appointments/dtos/ICreateAppointmentDTO';
 import IFindAllInMonthFromProviderDTO from '@modules/appointments/dtos/IFindAllInMonthFromProviderDTO';
+import IFindAllInDayFromProviderDTO from '@modules/appointments/dtos/IFindAllInDayFromProviderDTO';
 
 import Appointment from '../../infra/typeorm/entities/Appointment';
 
 class FakeAppointmentsRepository implements IAppointmentsRepository {
     private appointments: Appointment[] = [];
+
+    public async create({
+        provider_id,
+        date,
+    }: ICreateAppointmentDTO): Promise<Appointment> {
+        const appointment = new Appointment();
+
+        Object.assign(appointment, { id: uuid(), date, provider_id });
+
+        this.appointments.push(appointment);
+
+        return appointment;
+    }
 
     public async findByDate(date: Date): Promise<Appointment | undefined> {
         const findAppointment = this.appointments.find(appointment =>
@@ -32,17 +46,21 @@ class FakeAppointmentsRepository implements IAppointmentsRepository {
         return findAppointments;
     }
 
-    public async create({
+    public async findAllInDayFromProvider({
         provider_id,
-        date,
-    }: ICreateAppointmentDTO): Promise<Appointment> {
-        const appointment = new Appointment();
+        month,
+        year,
+        day,
+    }: IFindAllInDayFromProviderDTO): Promise<Appointment[]> {
+        const findAppointments = this.appointments.filter(
+            appointment =>
+                appointment.provider_id === provider_id &&
+                getYear(appointment.date) === year &&
+                getMonth(appointment.date) + 1 === month &&
+                getDate(appointment.date) === day,
+        );
 
-        Object.assign(appointment, { id: uuid(), date, provider_id });
-
-        this.appointments.push(appointment);
-
-        return appointment;
+        return findAppointments;
     }
 }
 
