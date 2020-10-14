@@ -23,7 +23,7 @@ describe('CreateAppointment', () => {
         expect(appointment.provider_id).toBe('aipaipara');
     });
     it('should not be able create two appointment on the same time ', async () => {
-        const date = new Date(2020, 4, 17);
+        const date = new Date(2020, 4, 20, 8, 0, 0);
 
         await createAppointmentService.execute({
             date,
